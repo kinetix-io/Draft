@@ -20,7 +20,6 @@
         * { box-sizing: border-box; }
         ::selection { background-color: var(--lg-red); color: #fff; }
 
-        /* Structural Baseline: Fluid Scrolling enabled for all scaled displays */
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: var(--bg-matte); 
@@ -74,42 +73,14 @@
         
         .control-row { background: var(--white); padding: 8px 20px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; flex-shrink: 0; flex-wrap: wrap; }
         
-        /* ------------------------------------------------------------- */
-        /* RESPONSIVE OPTIMIZER LAYOUT (MOBILE & TABLET SAFE)            */
-        /* ------------------------------------------------------------- */
-        .sim-workspace { 
-            display: flex; 
-            flex-grow: 1; 
-            padding: 15px; 
-            gap: 20px; 
-            flex-wrap: wrap; 
-            align-items: flex-start; 
-        }
-
-        .sidebar { 
-            width: 100%; /* Stacks on mobile */
-            flex-shrink: 0; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-        }
-
-        .main-stage { 
-            flex-grow: 1; 
-            width: 100%; 
-            min-width: 0; /* CRITICAL: Prevents Chart.js from infinitely expanding on mobile */
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            position: relative; 
-        }
-
-        /* Desktop Layout (Side-by-side) */
+        /* RESPONSIVE LAYOUT */
+        .sim-workspace { display: flex; flex-grow: 1; padding: 15px; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+        .sidebar { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+        .main-stage { flex-grow: 1; width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 15px; position: relative; }
         @media (min-width: 900px) {
             .sidebar { width: 300px; }
             .main-stage { width: calc(100% - 320px); }
         }
-        /* ------------------------------------------------------------- */
 
         .chart-wrapper { width: 100%; min-height: 400px; background: #050505; border-radius: 12px; padding: 15px; border: 1px solid #333; position: relative; display: flex; flex-direction: column; }
         .zoom-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; border: 1px solid #555; padding: 6px 10px; border-radius: 6px; font-size: 14px; cursor: pointer; z-index: 50; transition: 0.2s; backdrop-filter: blur(4px); }
@@ -479,9 +450,13 @@
             gWC += avgWC;
             
             let takt = avgMP > 0 ? (avgWC / avgMP) : 0;
-            if(takt > maxT) maxT = takt;
+            // Rounding to 4 decimals prevents microscopic floating point errors from causing false breaches
+            let taktRounded = Math.round(takt * 10000) / 10000;
+            let targetRounded = Math.round(targetTakt * 10000) / 10000;
+
+            if(taktRounded > maxT) maxT = taktRounded;
             
-            if(targetTakt > 0 && takt > targetTakt && avgMP > 0) {
+            if(targetRounded > 0 && taktRounded > targetRounded && avgMP > 0) {
                 overloadCount++;
             }
         });
@@ -650,7 +625,7 @@
             }
             
             renderRawData();
-            updateDashboardKPIs(); 
+            // We do NOT update KPIs here anymore. We wait for initSim to generate the target takt, then update both.
             renderMultiFilters(); 
             renderModelTable();
             document.getElementById('dashArea').style.display = 'block';
@@ -682,13 +657,20 @@
         
         mKeys.forEach(mId => {
             const cols = modelColMap[mId];
+            let currentStageId = null;
+            
             for(let i=3; i<gRows.length; i++){ 
-                let stageId = gRows[i][0];
-                if(stageId) {
-                    stages.add(stageId);
-                    if(!stageDataMap[stageId]) stageDataMap[stageId] = { id: stageId, mp: 0, wc: 0 };
-                    stageDataMap[stageId].mp += parseFloat(gRows[i][cols.mp])||0;
-                    stageDataMap[stageId].wc += parseFloat(gRows[i][cols.tt])||0;
+                let rawId = gRows[i][0];
+                if(rawId) {
+                    currentStageId = rawId.toString();
+                    stages.add(currentStageId);
+                    if(!stageDataMap[currentStageId]) stageDataMap[currentStageId] = { id: currentStageId, mp: 0, wc: 0 };
+                    // Dashboard Sync Fix: Only sum MP from the header row of the stage
+                    stageDataMap[currentStageId].mp += parseFloat(gRows[i][cols.mp])||0;
+                }
+                if(currentStageId) {
+                    // Dashboard Sync Fix: Accumulate TT for all micro-tasks within the current stage
+                    stageDataMap[currentStageId].wc += parseFloat(gRows[i][cols.tt])||0;
                 }
             }
         });
@@ -775,6 +757,7 @@
             document.getElementById('shufBody').innerHTML = shufHtml;
 
             movementHistory = []; 
+            // Call updateDashboardKPIs here to ensure mathematical sync happens with the newly generated Takt Target
             updateDashboardKPIs();
             drawSim(); 
         }, 10);
@@ -805,7 +788,7 @@
 
         for(let i=0; i<activeTable.length; i++) {
             const s = activeTable[i]; const wc = s.micros.reduce((a,b)=>a+b.wc,0);
-            const takt = s.mp > 0 ? (wc/s.mp) : 0; const breach = takt > target;
+            const takt = s.mp > 0 ? (wc/s.mp) : 0; const breach = (Math.round(takt * 10000)/10000) > (Math.round(target * 10000)/10000);
             const oIdx = simData.indexOf(s);
             
             let tasksHtml = "";
@@ -849,7 +832,7 @@
                 const m = s.micros[j]; let taskTakt = m ? (m.wc / s.mp) : 0;
                 stackDatasets[j].data.push(taskTakt);
                 if(m) {
-                    stackDatasets[j].backgroundColor.push((currentTakt + taskTakt) > target ? `hsla(6, 85%, 60%, 0.95)` : `hsla(${Math.max(60, 120 - (j * 15))}, 85%, 50%, 0.95)`);
+                    stackDatasets[j].backgroundColor.push((Math.round((currentTakt + taskTakt)*10000)/10000) > (Math.round(target*10000)/10000) ? `hsla(6, 85%, 60%, 0.95)` : `hsla(${Math.max(60, 120 - (j * 15))}, 85%, 50%, 0.95)`);
                     stackDatasets[j].borderColor.push('#000'); currentTakt += taskTakt;
                 } else {
                     stackDatasets[j].backgroundColor.push('rgba(0,0,0,0)'); stackDatasets[j].borderColor.push('rgba(0,0,0,0)');
