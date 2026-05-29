@@ -67,8 +67,8 @@
         .tab-content.active { display: flex; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--white); padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .stat-label { font-size: 9px; font-weight: 800; color: var(--slate); text-transform: uppercase; margin-bottom: 4px; display: block; cursor: help; }
+        .stat-card { background: var(--white); padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: help; }
+        .stat-label { font-size: 9px; font-weight: 800; color: var(--slate); text-transform: uppercase; margin-bottom: 4px; display: block; }
         .stat-value { font-size: 20px; font-weight: 800; color: var(--lg-dark); }
         
         .control-row { background: var(--white); padding: 8px 20px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; flex-shrink: 0; flex-wrap: wrap; }
@@ -82,27 +82,67 @@
             .main-stage { width: calc(100% - 320px); }
         }
 
-        .chart-wrapper { width: 100%; min-height: 400px; background: #050505; border-radius: 12px; padding: 15px; border: 1px solid #333; position: relative; display: flex; flex-direction: column; }
+        /* 100% GRAPH FORCE */
+        .chart-wrapper { 
+            width: 100%; 
+            flex: 1 1 400px; /* Allows growth while maintaining 400px min */
+            min-height: 400px; 
+            background: #050505; 
+            border-radius: 12px; 
+            border: 1px solid #333; 
+            position: relative; 
+        }
+        /* Absolute anchor completely prevents ChartJS flex collapse */
+        .chart-inner {
+            position: absolute;
+            top: 15px; left: 15px; right: 15px; bottom: 15px;
+        }
+
         .zoom-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; border: 1px solid #555; padding: 6px 10px; border-radius: 6px; font-size: 14px; cursor: pointer; z-index: 50; transition: 0.2s; backdrop-filter: blur(4px); }
         .zoom-btn:hover { background: var(--lg-red); border-color: var(--lg-red); }
 
-        .table-wrapper { flex-grow: 1; background: var(--white); border-radius: 12px; overflow-x: auto; border: 1px solid var(--border-soft); padding: 10px; min-height: 300px; }
-        .zoomed { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; z-index: 9000; background: var(--bg-matte); padding: 20px; width: 100vw; height: 100vh; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .zoomed .chart-wrapper { flex: 0 0 45%; }
-        .zoomed .table-wrapper { flex: 1; padding: 10px; }
+        /* TABLE GRID BOUNDARIES */
+        .table-wrapper { 
+            flex-grow: 1; 
+            background: var(--white); 
+            border-radius: 12px; 
+            overflow: auto; 
+            border: 1px solid var(--border-soft); 
+            min-height: 300px; 
+            max-height: 550px; 
+        }
+        
+        table { width: 100%; border-collapse: collapse; background: var(--white); text-align: center; margin: 0; }
+        
+        th { 
+            background: #111 !important; 
+            padding: 12px; 
+            border: 1px solid #333; /* Explicit column boundaries */
+            font-size: 10px; 
+            font-weight: 800; 
+            color: var(--slate); 
+            text-transform: uppercase; 
+            position: sticky; 
+            top: 0; 
+            z-index: 50; 
+            white-space: nowrap; 
+            text-align: center !important; 
+            background-clip: padding-box; /* Prevents scroll bleed */
+            box-shadow: 0 1px 0 #333;
+        }
+        
+        td { 
+            padding: 10px 12px; 
+            border: 1px solid #333; /* Explicit column boundaries */
+            font-size: 11px; 
+            color: #eee; 
+            white-space: nowrap; 
+            text-align: center; 
+            vertical-align: middle;
+        }
 
-        .sidebar-box { background: var(--white); border-radius: 12px; border: 1px solid var(--border-soft); overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 8px 12px; background: rgba(255,255,255,0.04); font-size: 10px; font-weight: 800; border-bottom: 1px solid var(--border-soft); color: var(--slate); text-transform: uppercase; letter-spacing: 0.5px; }
-        .log-window { background: #050505; color: #0f0; font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 12px; height: 150px; overflow-y: auto; line-height: 1.6; }
-
-        .table-container { max-height: 350px; overflow-y: auto; overflow-x: auto; border-radius: 10px; border: 1px solid #333; position: relative; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--white); text-align: left; margin: 0; }
-        th { background: #111 !important; padding: 12px; border-bottom: 2px solid #333; font-size: 10px; font-weight: 800; color: var(--slate); text-transform: uppercase; position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 8px rgba(0,0,0,0.8); cursor: help; white-space: nowrap; }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border-soft); font-size: 11px; color: #eee; white-space: nowrap; text-align: center; }
-
-        .opt-table th { background: #111; color: var(--slate); }
-        .opt-table td { background: var(--white); border-bottom: 1px solid #222; vertical-align: middle; }
         .opt-table tr:hover td { background: #1a1a1a; }
+        
         .micro-task-row { display: flex; justify-content: space-between; align-items: center; font-size: 10px; padding: 4px 0; border-bottom: 1px dashed #333; }
         .micro-task-row:last-child { border-bottom: none; }
 
@@ -127,6 +167,14 @@
         .doc-card p, .doc-card li { font-size: 13px; color: #bbb; line-height: 1.6; }
         .doc-card b { color: #fff; }
         .formula-box { background: #0a0a0a; padding: 20px; border-left: 5px solid var(--lg-red); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #ddd; border-radius: 4px; margin: 15px 0; border-top: 1px solid #222; border-right: 1px solid #222; border-bottom: 1px solid #222;}
+        
+        .zoomed { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; z-index: 9000; background: var(--bg-matte); padding: 20px; width: 100vw; height: 100vh; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .zoomed .chart-wrapper { flex: 0 0 45%; }
+        .zoomed .table-wrapper { flex: 1; margin: 0; max-height: 100%; }
+        
+        .sidebar-box { background: var(--white); border-radius: 12px; border: 1px solid var(--border-soft); overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 8px 12px; background: rgba(255,255,255,0.04); font-size: 10px; font-weight: 800; border-bottom: 1px solid var(--border-soft); color: var(--slate); text-transform: uppercase; letter-spacing: 0.5px; }
+        .log-window { background: #050505; color: #0f0; font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 12px; height: 150px; overflow-y: auto; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -215,13 +263,14 @@
             <div style="background:#111; padding:10px 15px; border-radius:8px; margin-bottom:15px; border-left:4px solid var(--lg-red); font-size:11px; color:var(--slate); border-top:1px solid #333; border-right:1px solid #333; border-bottom:1px solid #333; flex-shrink: 0;">
                 📊 <b style="color:#fff;">GLOBAL LINE EFFICIENCY (MACRO MIXED-MODEL SCALE):</b> Tracks cumulative synchronization losses across all models concurrently present in the ingested TAKTDATA matrix.
             </div>
+            
             <div class="stats-grid" id="statsGridTop"></div>
             <div class="stats-grid" id="statsGridBottom"></div>
             
             <div style="display:flex; gap:20px; flex-wrap: wrap; flex-shrink: 0;">
                 <div style="flex:2; min-width: 400px;">
                     <h4 title="Efficiency % vs Master Baseline: Evaluates pure performance of a specific model against its historical GERP Standard. Can exceed 100% if optimized." style="font-size:11px; color:var(--lg-red); font-weight:800; text-transform:uppercase; margin-bottom:8px; cursor:help;">MODEL CAPABILITY LEDGER ℹ️</h4>
-                    <div class="table-container">
+                    <div class="table-container" style="max-height: 350px;">
                         <table><thead><tr><th>Tool Group</th><th>Model ID</th><th>Allocated MP</th><th>Actual Takt</th><th>GERT ST</th><th title="Isolated GERT Master Standard Time / (Model Headcount x Actual Operational Takt Time)">Efficiency %</th></tr></thead><tbody id="modelBody"></tbody></table>
                     </div>
                 </div>
@@ -235,7 +284,7 @@
                             <input type="file" id="fileShuffle" accept=".csv" style="display:none" onchange="uploadShuffleTemplate(this)">
                         </div>
                     </div>
-                    <div class="table-container">
+                    <div class="table-container" style="max-height: 350px;">
                         <table>
                             <thead><tr><th>Stage ID</th><th>Current Constraints</th><th style="width:130px;">Custom Range (e.g. 5-17)</th></tr></thead>
                             <tbody id="shufBody"></tbody>
@@ -306,7 +355,7 @@
             <div class="main-stage" id="mainStage">
                 <div class="chart-wrapper">
                     <button type="button" class="zoom-btn" title="Toggle Fullscreen" onclick="toggleZoom('mainStage')">⛶</button>
-                    <div style="position: relative; height: 100%; width: 100%;">
+                    <div class="chart-inner">
                         <canvas id="simChart"></canvas>
                     </div>
                 </div>
@@ -325,20 +374,20 @@
                 <button type="button" class="btn-smooth btn-primary" onclick="downloadAuditCSV()">Download Full History</button>
             </div>
         </div>
-        <div style="background:var(--white); border:1px solid #333; border-radius:12px; padding:0; overflow-y:auto; overflow-x:auto;">
+        <div class="table-wrapper" style="padding:0; max-height: none;">
             <table style="font-size: 9px; min-width: 900px;">
                 <thead>
                     <tr>
                         <th rowspan="2">Iter #</th><th rowspan="2">Action Type</th><th rowspan="2">Micro-Task Shuffled</th>
-                        <th colspan="3" style="text-align:center; background:#1a1a1a !important; border-left:1px solid #333;">Source Station Metrics</th>
-                        <th colspan="3" style="text-align:center; background:#1a1a1a !important; border-left:1px solid #333;">Target Station Metrics</th>
-                        <th colspan="3" style="text-align:center; background:#111 !important; border-left:1px solid #333;">Global Line Impact</th>
+                        <th colspan="3" style="background:#1a1a1a !important;">Source Station Metrics</th>
+                        <th colspan="3" style="background:#1a1a1a !important;">Target Station Metrics</th>
+                        <th colspan="3" style="background:#111 !important;">Global Line Impact</th>
                         <th rowspan="2">Timestamp</th>
                     </tr>
                     <tr>
-                        <th style="border-left:1px solid #333;">Stage</th><th>MP</th><th>Takt (Old → New)</th>
-                        <th style="border-left:1px solid #333;">Stage</th><th>MP</th><th>Takt (Old → New)</th>
-                        <th style="border-left:1px solid #333;">Max Bottleneck</th><th>Global SIM Efficiency</th><th>LBE Diff</th>
+                        <th>Stage</th><th>MP</th><th>Takt (Old → New)</th>
+                        <th>Stage</th><th>MP</th><th>Takt (Old → New)</th>
+                        <th>Max Bottleneck</th><th>Global SIM Efficiency</th><th>LBE Diff</th>
                     </tr>
                 </thead>
                 <tbody id="auditBody"></tbody>
@@ -438,7 +487,6 @@
     let iterationCounter = 0;
     let engineThrottle = 50; 
 
-    // --- SHARED CALCULATION ENGINE (Dashboard & Optimizer Sync) ---
     function calculateLineMetrics(dataset, targetTakt) {
         let gMP = 0, gWC = 0, maxT = 0, overloadCount = 0;
         
@@ -450,7 +498,6 @@
             gWC += avgWC;
             
             let takt = avgMP > 0 ? (avgWC / avgMP) : 0;
-            // Rounding to 4 decimals prevents microscopic floating point errors from causing false breaches
             let taktRounded = Math.round(takt * 10000) / 10000;
             let targetRounded = Math.round(targetTakt * 10000) / 10000;
 
@@ -490,7 +537,9 @@
     function toggleZoom(id) {
         const el = document.getElementById(id);
         el.classList.toggle('zoomed');
-        setTimeout(() => { if(simData.length > 0) drawSim(); }, 50); 
+        setTimeout(() => { 
+            if(simData.length > 0 && sChart) sChart.resize(); 
+        }, 150); 
     }
 
     function toggleRawData() {
@@ -527,7 +576,7 @@
         document.getElementById(id).classList.add('active');
         document.getElementById('btn-' + id).classList.add('active');
         if(id === 'results') renderAudit();
-        if(id === 'simulator' && sChart) setTimeout(() => { sChart.resize(); }, 50);
+        if(id === 'simulator' && sChart) setTimeout(() => { sChart.resize(); }, 100);
     }
 
     function handleFile(file, isMaster) {
@@ -625,7 +674,6 @@
             }
             
             renderRawData();
-            // We do NOT update KPIs here anymore. We wait for initSim to generate the target takt, then update both.
             renderMultiFilters(); 
             renderModelTable();
             document.getElementById('dashArea').style.display = 'block';
@@ -665,11 +713,9 @@
                     currentStageId = rawId.toString();
                     stages.add(currentStageId);
                     if(!stageDataMap[currentStageId]) stageDataMap[currentStageId] = { id: currentStageId, mp: 0, wc: 0 };
-                    // Dashboard Sync Fix: Only sum MP from the header row of the stage
                     stageDataMap[currentStageId].mp += parseFloat(gRows[i][cols.mp])||0;
                 }
                 if(currentStageId) {
-                    // Dashboard Sync Fix: Accumulate TT for all micro-tasks within the current stage
                     stageDataMap[currentStageId].wc += parseFloat(gRows[i][cols.tt])||0;
                 }
             }
@@ -677,23 +723,23 @@
 
         const aggregatedStages = Object.values(stageDataMap).map(s => ({ id: s.id, mp: s.mp / mKeys.length, wc: s.wc / mKeys.length }));
         const metrics = calculateLineMetrics(aggregatedStages, targetTakt);
-        
         let overloadDisplay = targetTakt > 0 ? metrics.overloadCount : "N/A";
 
+        /* HOVER DEFINITIONS RESTORED TO OUTER STAT CARDS */
         document.getElementById('statsGridTop').innerHTML = `
-            <div class="stat-card"><label class="stat-label">Tasks</label><span class="stat-value">${Math.max(0, gRows.length-3)}</span></div>
-            <div class="stat-card"><label class="stat-label">Stages</label><span class="stat-value">${stages.size}</span></div>
-            <div class="stat-card"><label class="stat-label">Models</label><span class="stat-value">${mKeys.length}</span></div>
-            <div class="stat-card"><label class="stat-label">Total MP</label><span class="stat-value">${Math.round(metrics.gMP)}</span></div>
-            <div class="stat-card"><label class="stat-label">Total Work Content</label><span class="stat-value">${metrics.gWC.toFixed(2)} mins</span></div>
+            <div class="stat-card" title="Total distinct micro-tasks identified across the line"><label class="stat-label">Tasks</label><span class="stat-value">${Math.max(0, gRows.length-3)}</span></div>
+            <div class="stat-card" title="Total physical workstations/benches recognized on the line"><label class="stat-label">Stages</label><span class="stat-value">${stages.size}</span></div>
+            <div class="stat-card" title="Distinct product variations (SKUs) actively calculated"><label class="stat-label">Models</label><span class="stat-value">${mKeys.length}</span></div>
+            <div class="stat-card" title="Total allocated manpower footprint"><label class="stat-label">Total MP</label><span class="stat-value">${Math.round(metrics.gMP)}</span></div>
+            <div class="stat-card" title="Mathematical average of total cycle time required to build one complete unit"><label class="stat-label">Total Work Content</label><span class="stat-value">${metrics.gWC.toFixed(2)} mins</span></div>
         `;
 
         document.getElementById('statsGridBottom').innerHTML = `
-            <div class="stat-card"><label class="stat-label">Overload Stages</label><span class="stat-value" style="color:var(--danger);">${overloadDisplay}</span></div>
-            <div class="stat-card"><label class="stat-label">Bottleneck (Max Takt)</label><span class="stat-value" style="color:var(--accent);">${metrics.maxT.toFixed(4)} mins</span></div>
-            <div class="stat-card"><label class="stat-label">Yield Rate (Est.)</label><span class="stat-value">100.0%</span></div>
-            <div class="stat-card"><label class="stat-label">UPH / UPPH</label><span class="stat-value" style="color:var(--success);">${metrics.uph} / ${metrics.upph}</span></div>
-            <div class="stat-card" style="background:var(--lg-red); border:none;"><label class="stat-label" style="color:white;">Efficiency % [Macro] ℹ️</label><span class="stat-value" style="color:white;">${metrics.lineEff}%</span></div>
+            <div class="stat-card" title="Count of stages currently breaching the Takt Benchmark"><label class="stat-label">Overload Stages</label><span class="stat-value" style="color:var(--danger);">${overloadDisplay}</span></div>
+            <div class="stat-card" title="The longest stage duration restricting maximum output"><label class="stat-label">Bottleneck (Max Takt)</label><span class="stat-value" style="color:var(--accent);">${metrics.maxT.toFixed(4)} mins</span></div>
+            <div class="stat-card" title="Projected output completion quality (Fixed baseline at 100%)"><label class="stat-label">Yield Rate (Est.)</label><span class="stat-value">100.0%</span></div>
+            <div class="stat-card" title="Units Per Hour / Units Per Person Per Hour"><label class="stat-label">UPH / UPPH</label><span class="stat-value" style="color:var(--success);">${metrics.uph} / ${metrics.upph}</span></div>
+            <div class="stat-card" title="Cumulative synchronization losses across all models" style="background:var(--lg-red); border:none;"><label class="stat-label" style="color:white;">Efficiency % [Macro] ℹ️</label><span class="stat-value" style="color:white;">${metrics.lineEff}%</span></div>
         `;
     }
 
@@ -757,7 +803,6 @@
             document.getElementById('shufBody').innerHTML = shufHtml;
 
             movementHistory = []; 
-            // Call updateDashboardKPIs here to ensure mathematical sync happens with the newly generated Takt Target
             updateDashboardKPIs();
             drawSim(); 
         }, 10);
@@ -784,7 +829,15 @@
         });
 
         let tableHtml = `<table class="opt-table">
-            <thead><tr><th style="width:15%; text-align:left;">STATION</th><th style="width:20%;">MANPOWER (MANUAL)</th><th style="width:15%;">ACTUAL TAKT</th><th style="width:50%; text-align:left;">MICRO-TASKS & ROUTING CONTROLS</th></tr></thead><tbody>`;
+            <thead>
+                <tr>
+                    <th style="width:15%;">STATION</th>
+                    <th style="width:20%;">MANPOWER (MANUAL)</th>
+                    <th style="width:15%;">ACTUAL TAKT</th>
+                    <th style="width:50%;">MICRO-TASKS & ROUTING CONTROLS</th>
+                </tr>
+            </thead>
+            <tbody>`;
 
         for(let i=0; i<activeTable.length; i++) {
             const s = activeTable[i]; const wc = s.micros.reduce((a,b)=>a+b.wc,0);
@@ -795,7 +848,7 @@
             for(let k=0; k<s.micros.length; k++) {
                 const m = s.micros[k];
                 tasksHtml += `<div class="micro-task-row">
-                    <span style="font-weight:600; color:var(--slate); max-width:65%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.name}">S${s.id}_${m.name}</span>
+                    <span style="font-weight:600; color:var(--slate); max-width:65%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left;" title="${m.name}">S${s.id}_${m.name}</span>
                     <div style="display:flex; gap:10px; align-items:center;">
                         <span style="color:var(--lg-red); font-weight:800; font-family:'JetBrains Mono', monospace;">${(s.mp>0?m.wc/s.mp:0).toFixed(4)}</span>
                         <select onchange="manualShift(${oIdx},${k},this.value)" style="width:55px; height:20px; font-size:9px; background:#222; color:#fff; border:1px solid #444; border-radius:3px;">
@@ -807,14 +860,14 @@
             }
 
             tableHtml += `<tr>
-                <td style="text-align: left; font-weight: 800; color: ${breach ? 'var(--danger)' : 'var(--lg-dark)'};">S${s.id}<br><span style="font-size:8px; font-weight:600; color:var(--slate);">${s.name}</span></td>
+                <td style="font-weight: 800; color: ${breach ? 'var(--danger)' : 'var(--lg-dark)'};">S${s.id}<br><span style="font-size:8px; font-weight:600; color:var(--slate);">${s.name}</span></td>
                 <td><div style="display:flex; align-items:center; justify-content:center; gap:8px;">
                     <button type="button" class="arrow-btn" onclick="adjustMP(${oIdx},-0.5)">-</button>
                     <input type="number" class="mp-input" step="0.1" min="0" value="${s.mp.toFixed(1)}" onchange="setMP(${oIdx}, this.value)">
                     <button type="button" class="arrow-btn" onclick="adjustMP(${oIdx},1.5)">+</button>
                 </div></td>
                 <td><div style="background:${breach ? 'var(--danger)' : 'var(--success)'}; color:white; padding:4px 8px; border-radius:4px; font-weight:800; display:inline-block; font-family:'JetBrains Mono', monospace; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${takt.toFixed(4)}</div></td>
-                <td style="text-align: left;">${tasksHtml || '<em style="color:#555; font-size:10px;">No active tasks</em>'}</td>
+                <td style="text-align: left; padding: 4px 12px;">${tasksHtml || '<em style="color:#555; font-size:10px;">No active tasks</em>'}</td>
             </tr>`;
         }
         tableHtml += `</tbody></table>`;
@@ -856,6 +909,8 @@
                     } 
                 }
             });
+            // Force redraw layout dimensions
+            sChart.resize();
         }
         
         document.getElementById('liveEff').innerText = simMetrics.lineEff + "%";
@@ -1009,11 +1064,11 @@
             h += `<tr>
                 <td style="font-weight:800;">${m.run}</td><td>${m.type}</td>
                 <td><div style="max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.task}">${m.task}</div></td>
-                <td style="border-left:1px solid #333;"><div style="max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.srcStage}">${m.srcStage}</div></td>
+                <td><div style="max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.srcStage}">${m.srcStage}</div></td>
                 <td>${m.srcMP}</td><td>${m.srcTaktDiff}</td>
-                <td style="border-left:1px solid #333;"><div style="max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.destStage}">${m.destStage}</div></td>
+                <td><div style="max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.destStage}">${m.destStage}</div></td>
                 <td>${m.destMP}</td><td>${m.destTaktDiff}</td>
-                <td style="border-left:1px solid #333;">${m.bottleneck}</td><td>${m.oldLBE} → ${m.newLBE}</td>
+                <td>${m.bottleneck}</td><td>${m.oldLBE} → ${m.newLBE}</td>
                 <td style="${dVal > 0 ? 'color:var(--success);' : (dVal < 0 ? 'color:var(--danger);' : '')} font-weight:800;">${m.delta}</td><td>${m.time}</td>
             </tr>`;
         });
